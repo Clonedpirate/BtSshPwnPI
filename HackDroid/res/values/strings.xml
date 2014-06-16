@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">   PwnPi Wifite tool</string>
+    <string name="action_settings">Settings</string>
+
+    <color name="blue">#0083ff</color>
+    <color name="lblue">#0099ff</color>
+    <color name="llblue">#14BFFF</color>
+    <color name="black">#000000</color>
+    <color name="white">#FFFFFF</color>
+    <color name="kindagreen">#04d5a2</color>
+    <color name="test">#06d3a2</color>
+
+</resources>
