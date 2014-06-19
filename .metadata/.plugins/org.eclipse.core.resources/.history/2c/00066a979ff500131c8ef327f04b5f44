@@ -1,0 +1,35 @@
+package com.cloned.hackdroid;
+
+
+public class SshConnect extends JFrame {
+
+	// creates new SSH client
+	final SSHClient ssh = new SSHClient(new AndroidConfig());
+	Command cmd = null;
+
+	// Adds a nullHostKeyVerifier
+	ssh.addHostKeyVerifier(new NullHostKeyVerifier());
+
+	// default port number
+	int pn = 22;
+
+	// connect to the machine
+	try {
+	ssh.connect(ipaddress, pn);
+	} catch (IOException e) {
+	Log.e(TAG, e.getMessage(), e);
+	}
+
+	// Authenticate with the password entered
+	ssh.authPassword(username, password);
+
+	// start a new session
+	final Session session = ssh.startSession();
+
+	// runs the commands in the remote machine
+	cmd = session.exec("ls");
+
+	// reads the output of the command
+	result = IOUtils.readFully(cmd.getInputStream()).toString();
+
+}

@@ -1,0 +1,59 @@
+package com.cloned.hackdroid;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.util.Properties;
+
+import android.util.Log;
+
+import com.jcraft.jsch.Channel;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.Session;
+
+public class SshConnect {
+	
+	
+	
+	
+	
+	
+	
+	public static String executeRemoteCommand(String username, String password, String hostname, int port) throws Exception {     
+	    JSch jsch = new JSch();
+	    Session session = jsch.getSession(username, hostname, port);
+	    session.setPassword(password);
+
+	    // Avoid asking for key confirmation
+	    Properties prop = new Properties();
+	    prop.put("StrictHostKeyChecking", "no");
+	    session.setConfig(prop);
+
+	    session.connect();
+
+	    Channel channel = session.openChannel("shell");
+	    channel.connect();
+
+	    DataInputStream dataIn = new DataInputStream(channel.getInputStream());  
+	    DataOutputStream dataOut = new DataOutputStream(channel.getOutputStream());  
+
+	    // send ls command to the server  
+	    dataOut.writeBytes("ls\r\n");  
+	    dataOut.flush();  
+
+	    // and print the response   
+	    String line = dataIn.readLine();
+	    String result = line + "\n";
+
+	    while ((line = dataIn.readLine()) != null) {
+	        result += line + "\n";
+	        Log.i("TAG", "Line: "+line);
+	    }
+
+	    dataIn.close();  
+	    dataOut.close();  
+	    channel.disconnect();  
+	    session.disconnect();
+
+	    return result;
+	}
+}

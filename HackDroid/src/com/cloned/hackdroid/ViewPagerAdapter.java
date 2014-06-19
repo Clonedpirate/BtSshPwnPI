@@ -18,13 +18,13 @@ public class ViewPagerAdapter extends FragmentPagerAdapter {
         Fragment f = new Fragment();
         switch(position){
         case 0:
-            f=PressureMapFragment.newInstance(_context);
+//            f=PressureMapFragment.newInstance(_context);
             break;
 //        case 1:
 //            f=GraphActivityFragment.newInstance(_context);
 //            break;
         case 2:
-        	f=FineTuneFragment.newInstance(_context);
+//        	f=FineTuneFragment.newInstance(_context);
         }
         return f;
     }

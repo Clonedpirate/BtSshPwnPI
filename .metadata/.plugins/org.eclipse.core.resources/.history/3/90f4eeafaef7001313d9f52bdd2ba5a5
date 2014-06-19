@@ -1,0 +1,50 @@
+package com.cloned.hackdroid;
+
+
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.util.Properties;
+
+import android.os.AsyncTask;
+import android.util.Log;
+
+import com.jcraft.jsch.Channel;
+import com.jcraft.jsch.ChannelExec;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.Session;
+ 
+import android.app.Activity;
+
+public class SshConnect2 extends Activity {
+	public static String executeRemoteCommand(
+            String username,
+            String password,
+            String hostname,
+            int port) throws Exception {     
+
+JSch jsch = new JSch();
+Session session = jsch.getSession("username", "192.168.0.121", 22);
+session.setPassword("password");
+
+// Avoid asking for key confirmation
+Properties prop = new Properties();
+prop.put("StrictHostKeyChecking", "no");
+session.setConfig(prop);
+
+session.connect();
+
+// SSH Channel
+ChannelExec channelssh = (ChannelExec) 
+                session.openChannel("exec");      
+ByteArrayOutputStream baos = new ByteArrayOutputStream();
+channelssh.setOutputStream(baos);
+
+// Execute command
+channelssh.setCommand("ls");
+channelssh.connect();        
+channelssh.disconnect();
+
+return baos.toString();
+}
+}
+}

@@ -1,0 +1,102 @@
+package com.cloned.hackdroid;
+
+
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.util.Properties;
+
+import android.os.AsyncTask;
+import android.util.Log;
+
+import com.jcraft.jsch.Channel;
+import com.jcraft.jsch.ChannelExec;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.Session;
+ 
+ 
+public class SshConnect2 {
+ 
+    private Session session;
+
+	/**
+     * @param args
+     */
+	public void openSSH(
+	        String username,
+	        String password,
+	        String hostname,
+	        int port) throws Exception {     
+
+	    JSch jsch = new JSch();
+	    Session session = jsch.getSession(username, hostname, 22);
+	    this.session = session;
+	    session.setPassword(password);
+
+	    // Avoid asking for key confirmation
+	    Properties prop = new Properties();
+	    prop.put("StrictHostKeyChecking", "no");
+	    session.setConfig(prop);
+	    session.connect();
+
+	}
+
+	public String runCommand(String command)  throws Exception {
+	    // SSH Channel
+	    ChannelExec channelssh = (ChannelExec) session.openChannel("exec");
+	    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+	    InputStream in = channelssh.getInputStream();
+	    channelssh.setOutputStream(baos);
+
+	    // Execute command
+	    channelssh.setCommand(command);
+	    channelssh.connect();        
+
+	     System.out.println("Unix system connected...");
+	        byte[] tmp = new byte[1024];
+	        while (true){
+
+	            while (in.available() > 0) {
+	                Log.v("running", "line");  // won't work
+	                int i = in.read(tmp, 0, 1024);
+	                if (i < 0) {
+
+	                    break;
+	                }
+	                String line = new String(tmp, 0, i);
+	                System.out.println("Unix system console output: " +line);
+	                        channelssh.disconnect();
+	            }
+	        }
+	}
+
+	private class AsyncTaskOne extends AsyncTask<Void, Void, Boolean> {
+
+	    @Override
+	    protected Boolean doInBackground(Void... params) {
+
+	        try {
+	            openSSH("login", "pass", "10.10.10.80", 22 );
+	        } catch (Exception e) {
+	            // TODO Auto-generated catch block
+	            e.printStackTrace();
+	        }
+
+	        return true;
+	    }
+
+	    protected void onPostExecute(Boolean value) {
+
+	        if (value)  {
+	        try {
+	            runCommand("ls -llh");
+	        } catch (Exception e) {
+	            // TODO Auto-generated catch block
+	            e.printStackTrace();
+	        }
+
+	        }
+	    }
+
+	}
+ 
+}

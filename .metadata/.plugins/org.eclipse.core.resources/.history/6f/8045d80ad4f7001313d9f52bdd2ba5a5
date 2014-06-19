@@ -1,0 +1,623 @@
+package com.cloned.hackdroid;
+
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.util.List;
+import java.util.Properties;
+
+import android.app.Activity;
+import android.graphics.Color;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.os.StrictMode;
+import android.text.method.ScrollingMovementMethod;
+import android.util.Log;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.View.OnTouchListener;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ScrollView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.jcraft.jsch.Channel;
+import com.jcraft.jsch.ChannelExec;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.Session;
+
+public class SshConnect extends Activity {
+	/** Called when the activity is first created. */
+	EditText command;
+	TextView result;
+	TextView IPtext;
+	Button connectBtn;
+	Button disconnectBtn;
+	Button commandBtn;
+	Session session;
+	ByteArrayOutputStream baos;
+	ByteArrayInputStream bais;
+	Channel channel;
+
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.terminal);
+		bais = new ByteArrayInputStream(new byte[1000]);
+		IPtext = (TextView) findViewById(R.id.IPtext);
+		command = (EditText) findViewById(R.id.editText1);
+		result = (TextView) findViewById(R.id.terminal);
+		connectBtn = (Button) findViewById(R.id.button1);
+		disconnectBtn = (Button) findViewById(R.id.button2);
+		commandBtn = (Button) findViewById(R.id.button3);
+
+		// Sets textview to empty
+		result.setText("");
+		result.setMovementMethod(new ScrollingMovementMethod());
+		// fixes issue with NetworkOnMainThreadException
+		StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder()
+				.permitAll().build();
+		StrictMode.setThreadPolicy(policy);
+
+		IPtext.setText("Android IP: " + getIpAddr());
+
+		// ** Buttons her**//
+		commandBtn.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+
+			}
+		});
+
+		disconnectBtn.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				try {
+					JSch jsch = new JSch();
+					Session session = jsch.getSession("cloned",
+							"192.168.87.101", 22);
+					session.setPassword("0201windose");
+
+					// Avoid asking for key confirmation
+					Properties prop = new Properties();
+					prop.put("StrictHostKeyChecking", "no");
+					session.setConfig(prop);
+					session.disconnect();
+					result.setText("Disconnected");
+
+				} catch (Exception e) {
+					System.out.println(e.getMessage());
+				}
+
+			}
+		});
+
+		connectBtn.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				try {
+					JSch jsch = new JSch();
+					Session session = jsch.getSession("cloned",
+							"192.168.87.101", 22);
+					session.setPassword("0201windose");
+
+					// Avoid asking for key confirmation
+					Properties prop = new Properties();
+					prop.put("StrictHostKeyChecking", "no");
+					session.setConfig(prop);
+
+					session.connect();
+
+					ChannelExec channel = (ChannelExec) session
+							.openChannel("exec");
+					channel.setCommand("ls");
+					channel.connect();
+
+					 //Controls the input stream, making it look more readable.
+					InputStream outputstream_from_the_channel = channel.getInputStream();
+					InputStream input = channel.getInputStream();
+					BufferedReader br = new BufferedReader(new InputStreamReader(outputstream_from_the_channel));
+					String line;
+					while ((line = br.readLine()) != null)
+						System.out.print(line + "\n");
+
+
+ 
+					
+					
+					commander.println("ls -la");
+					// commander.println("cd folder");
+					// commander.println("ls -la");
+					commander.println("exit");
+					commander.close();
+
+					do {
+						Thread.sleep(1000);
+					} while (!channel.isEOF());
+
+					session.disconnect();
+
+				} catch (Exception e) {
+					System.out.println(e.getMessage());
+					result.append(e.getMessage() + "\n");
+				}
+
+				// if (session.isConnected() == true) {
+				//
+				// //Echo if system is connected.
+				// System.out.println("im connected");
+				// } else {
+				// System.out.println("Disconnected");
+				// }
+				//
+
+			}
+		});
+	}
+
+	// private void connectToSsh() {
+	//
+	// String username = "cloned";
+	// String password = "0201windose";
+	// String host = "192.168.87.101"; // sample ip address
+	// String input;
+	// //
+	// JSch jsch = new JSch();
+	// try {
+	//
+	//
+	//
+	// //Creating session
+	// Session session;
+	// session = jsch.getSession(username, host, 22);
+	// StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder()
+	// .permitAll().build();
+	// StrictMode.setThreadPolicy(policy);
+	// session.setPassword(password);
+	//
+	// // Avoid asking for key confirmation
+	// Properties prop = new Properties();
+	// prop.put("StrictHostKeyChecking", "no");
+	// session.setConfig(prop);
+	// session.connect();
+	//
+	// // SSH Channel
+	// ChannelExec channelssh = (ChannelExec) session.openChannel("exec");
+	//
+	// Channel channel=session.openChannel("exec");
+	// ((ChannelExec)channel).setCommand("ls");
+	//
+	//
+	// // InputStream inputStream = channelssh.getInputStream();
+	// //
+	// // BufferedReader bufferedReader = new BufferedReader(new
+	// InputStreamReader(inputStream));
+	// //
+	// // StringBuilder stringBuilder = new StringBuilder();
+	// //
+	// // String line;
+	// //
+	// // while ((line = bufferedReader.readLine()) != null)
+	// // {
+	// //
+	// // stringBuilder.append(line);
+	// // stringBuilder.append('\n');
+	// //
+	// // }
+	// //
+	// // input = stringBuilder.toString();
+	// //
+	// //
+	//
+	//
+	//
+	// ByteArrayOutputStream baos = new ByteArrayOutputStream();
+	// channelssh.setOutputStream(baos);
+	//
+	//
+	//
+	//
+	// // Execute command
+	// channelssh.setCommand("ls");
+	// channelssh.connect();
+	// channelssh.disconnect();
+	//
+	// String RESULT = baos.toString();
+	// result.setBackgroundColor(Color.GRAY);
+	// result.setText(RESULT);
+	//
+	// } catch (JSchException e) {
+	// // TODO Auto-generated catch block
+	// Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
+	// }
+	// }
+	//
+
+	//
+	//
+	// StrictMode.ThreadPolicy policy = new
+	// StrictMode.ThreadPolicy.Builder().permitAll().build();
+	// StrictMode.setThreadPolicy(policy);
+	// Session session = jsch.getSession(username, host, 22);
+	// session.setPassword(password);
+	// Channel channel = session.openChannel("shell");
+	//
+	// OutputStream inputstream_for_the_channel =
+	// channel.getOutputStream();
+	// PrintStream commander = new
+	// PrintStream(inputstream_for_the_channel, true);
+	// // Avoid asking for key confirmation
+	// Properties prop = new Properties();
+	// prop.put("StrictHostKeyChecking", "no");
+	// session.setConfig(prop);
+	// channel.connect();
+	// //Controls the input stream, making it look more readable.
+	// InputStream outputstream_from_the_channel =
+	// channel.getInputStream();
+	// BufferedReader br = new BufferedReader(new
+	// InputStreamReader(outputstream_from_the_channel));
+	// String line;
+	// while ((line = br.readLine()) != null)
+	// System.out.print(line+"\n");
+	//
+	//
+	//
+	// commander.println("ls -la");
+	// // commander.println("cd folder");
+	// // commander.println("ls -la");
+	// commander.println("exit");
+	// commander.close();
+	//
+	// do {
+	// Thread.sleep(1000);
+	// } while(!channel.isEOF());
+	//
+	// session.disconnect();
+
+	// //fixes issue with NetworkOnMainThreadException
+	// StrictMode.ThreadPolicy policy = new
+	// StrictMode.ThreadPolicy.Builder().permitAll().build();
+	// StrictMode.setThreadPolicy(policy);
+	// session = jsch.getSession(username, host, 22);
+	// session.setPassword(password);
+	//
+	// Properties properties = new Properties();
+	// properties.put("StrictHostKeyChecking", "no");
+	// session.setConfig(properties);
+	// session.connect(30000);
+	//
+	// channel = session.openChannel("shell");
+	// channel.setInputStream(bais);
+	// channel.setOutputStream(baos);
+	// // setUpHostKey(session);
+	// channel.connect();
+	// if (channel.isConnected()) {
+	// System.out.println("im connected");
+	// }
+	// else {
+	// System.out.println("not connected");
+	// }
+	//
+	// } catch (JSchException e) {
+	// // TODO Auto-generated catch block
+	// Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
+	// }
+	// }
+	// else{
+	// Toast.makeText(this, "Command cannot be empty !",
+	// Toast.LENGTH_LONG).show();
+	// }
+
+	// public void onSSH(View v) {
+	// String username = "cloned";
+	// String password = "0201windose";
+	// String host = "192.168.87.101"; // sample ip address
+	// if (command.getText().toString() != "") {
+	// JSch jsch = new JSch();
+	// try {
+	// // fixes issue with NetworkOnMainThreadException
+	// StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder()
+	// .permitAll().build();
+	// StrictMode.setThreadPolicy(policy);
+	// session = jsch.getSession(username, host, 22);
+	// session.setPassword(password);
+	//
+	// Properties properties = new Properties();
+	// properties.put("StrictHostKeyChecking", "no");
+	// session.setConfig(properties);
+	// session.connect(30000);
+	//
+	// channel = session.openChannel("shell");
+	// channel.setInputStream(bais);
+	// channel.setOutputStream(baos);
+	// // setUpHostKey(session);
+	// channel.connect();
+	// if (channel.isConnected()) {
+	// System.out.println("im connected");
+	// } else {
+	// System.out.println("not connected");
+	// }
+	//
+	// } catch (JSchException e) {
+	// // TODO Auto-generated catch block
+	// Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
+	// }
+	// } else {
+	// Toast.makeText(this, "Command cannot be empty !", Toast.LENGTH_LONG)
+	// .show();
+	// }
+	//
+	// }
+
+	// public void onCommand(View v) {
+	// try {
+	// bais.read(command.getText().toString().getBytes());
+	// } catch (IOException e) {
+	// // TODO Auto-generated catch block
+	// e.printStackTrace();
+	// }
+	//
+	// baos = new ByteArrayOutputStream();
+	// channel.setOutputStream(baos);
+	// result.setText(baos.toString());
+	// }
+
+	public String getIpAddr() {
+		WifiManager wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
+		WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+		int ip = wifiInfo.getIpAddress();
+
+		String ipString = String.format("%d.%d.%d.%d", (ip & 0xff),
+				(ip >> 8 & 0xff), (ip >> 16 & 0xff), (ip >> 24 & 0xff));
+
+		return ipString;
+	}
+
+	// cmd1 ; cmd2 ; cmd3
+	//
+	// cmd1 && cmd2 && cmd3
+	//
+	// cmd1
+	// cmd2
+	// cmd3
+	//
+	// channel.setCommand("cmd1ncmd2ncmd3");
+	//
+	// List<String> commands = new ArrayList<String>();
+	// commands.add("touch test1.txt");
+	// commands.add("touch test2.txt");
+	// commands.add("touch test3.txt");
+	// runCommands(scpInfo, commands);
+
+	// public static void runCommands(SCPInfo scpInfo, List<String> commands){
+	// try {
+	// JSch jsch = new JSch();
+	// Session session = jsch.getSession(scpInfo.getUsername(), scpInfo.getIP(),
+	// scpInfo.getPort());
+	// session.setPassword(scpInfo.getPassword());
+	// setUpHostKey(session);
+	// session.connect();
+	//
+	// Channel channel=session.openChannel("shell");//only shell
+	// channel.setOutputStream(System.out);
+	// PrintStream shellStream = new PrintStream(channel.getOutputStream()); //
+	// printStream for convenience
+	// channel.connect();
+	// for(String command: commands) {
+	// shellStream.println(command);
+	// shellStream.flush();
+	// }
+	//
+	// Thread.sleep(5000);
+	//
+	// channel.disconnect();
+	// session.disconnect();
+	// } catch (Exception e) {
+	// System.err.println("ERROR: Connecting via shell to "+scpInfo.getIP());
+	// e.printStackTrace();
+	// }
+	// }
+
+	private static void setUpHostKey(Session session) {
+		// Note: There are two options to connect
+		// 1: Set StrictHostKeyChecking to no
+		// Create a Properties Object
+		// Set StrictHostKeyChecking to no
+		// session.setConfig(config);
+		// 2: Use the KnownHosts File
+		// Manually ssh into the appropriate machines via unix
+		// Go into the .sshknown_hosts file and grab the entries for the hosts
+		// Add the entries to a known_hosts file
+		// jsch.setKnownHosts(khfile);
+		java.util.Properties config = new java.util.Properties();
+		config.put("StrictHostKeyChecking", "no");
+		session.setConfig(config);
+	}
+
+	public static class Shell extends AsyncTask<String, String, Long> {
+
+		private static String Konsoleantwort = null;
+
+		@Override
+		protected Long doInBackground(String... arguments) {
+			// TODO Auto-generated method stub
+			// Shell.java Code
+
+			// String username = "cloned";
+			// String password = "0201windose";
+			// String host = "192.168.87.101"; // sample ip address
+			// String input;
+			// //
+			// JSch jsch = new JSch();
+			// try {
+			//
+			//
+			//
+			// //Creating session
+			// Session session;
+			// session = jsch.getSession(username, host, 22);
+			// StrictMode.ThreadPolicy policy = new
+			// StrictMode.ThreadPolicy.Builder()
+			// .permitAll().build();
+			// StrictMode.setThreadPolicy(policy);
+			// session.setPassword(password);
+			//
+			// // Avoid asking for key confirmation
+			// Properties prop = new Properties();
+			// prop.put("StrictHostKeyChecking", "no");
+			// session.setConfig(prop);
+			// session.connect();
+			//
+			//
+			//
+
+			// Extract Arguments
+			String user = "cloned";
+			String host = "0201windose";
+			int port = 22;
+			String password = arguments[2];
+			String command = arguments[3];
+
+			Long response = (long) 0;
+
+			System.out.println("SSH connecting...");
+
+			try {
+				JSch jsch = new JSch();
+				Session session = jsch.getSession(user, host, port);
+				StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder()
+						.permitAll().build();
+				StrictMode.setThreadPolicy(policy);
+				session.setPassword(password);
+
+				// Avoid asking for key confirmation
+				Properties prop = new Properties();
+				prop.put("StrictHostKeyChecking", "no");
+				session.setConfig(prop);
+
+				session.connect();
+
+				System.out.println("SSH connected!");
+
+				Channel channel = session.openChannel("exec");
+				((ChannelExec) channel).setCommand(command);
+				channel.setInputStream(null);
+
+				((ChannelExec) channel).setErrStream(System.err);
+
+				InputStream in = channel.getInputStream();
+				channel.connect();
+
+				byte[] tmp = new byte[1024];
+				while (true) {
+					while (in.available() > 0) {
+						int i = in.read(tmp, 0, 1024);
+						if (i < 0)
+							break;
+						Konsoleantwort = new String(tmp, 0, i);
+						System.out.print(new String(tmp, 0, i));
+					}
+					if (channel.isClosed()) {
+						System.out.println("exit-status: "
+								+ channel.getExitStatus());
+
+						Log.v("blah", "blah blah");
+						Log.v("Konsoleantwort:", Konsoleantwort);
+
+						break;
+					}
+					try {
+						Thread.sleep(1000);
+					} catch (Exception ee) {
+					}
+				}
+
+				channel.disconnect();
+				session.disconnect();
+
+			} catch (Exception e) {
+				System.out.println(e.getMessage());
+			}
+
+			// Return Wert je nach eingegebenem command
+
+			if (command == "sudo /home/pi/wiringPi/rcswitch-pi/send 11010 2 1") {
+				response = (long) 111;
+			} // Fender Amp
+			if (command == "sudo /home/pi/wiringPi/rcswitch-pi/send 11010 2 0") {
+				response = (long) 110;
+			}
+			if (command == "sudo /home/pi/wiringPi/rcswitch-pi/send 11010 2 1") {
+				response = (long) 121;
+			} // Bettlicht
+			if (command == "sudo /home/pi/wiringPi/rcswitch-pi/send 11010 2 0") {
+				response = (long) 120;
+			}
+			if (command == "sudo /home/pi/wiringPi/rcswitch-pi/send 11010 1 1") {
+				response = (long) 131;
+			} // Radio
+			if (command == "sudo /home/pi/wiringPi/rcswitch-pi/send 11010 1 0") {
+				response = (long) 130;
+			}
+
+			return response;
+		}
+
+		protected void onPostExecute(Long response) {
+			// result anzeigen
+			// String meldung = "Meldung undefiniert";
+			//
+			// if(response==111){
+			// meldung = "Bettlicht Raum 1 An!";
+			// room1toggle2.setChecked(true);
+			// writeBoolPref("room1switch1Key", true);
+			// }
+			// if(response==110){
+			// meldung = "Bettlicht Raum 1 Aus!";
+			// room1toggle2.setChecked(false);
+			// writeBoolPref("room1switch1Key", false);
+			// }
+			// if(response==121){
+			// meldung = "Bettlicht Raum 1 An!";
+			// room1toggle2.setChecked(true);
+			// writeBoolPref("room1switch2Key", true);
+			// }
+			// if(response==120){
+			// meldung = "Bettlicht Raum 1 Aus!";
+			// room1toggle2.setChecked(false);
+			// writeBoolPref("room1switch2Key", false);
+			// }
+			// if(response==131){
+			// meldung = "Radio Raum 1 An!";
+			// room1toggle3.setChecked(true);
+			// writeBoolPref("room1switch3Key", true);
+			// }
+			// if(response==130){
+			// meldung = "Radio Raum 1 Aus!";
+			// room1toggle3.setChecked(false);
+			// writeBoolPref("room1switch3Key", false);
+			// }
+			//
+			// labelMessage.setText(meldung);
+			// }
+
+		}
+	}
+
+}

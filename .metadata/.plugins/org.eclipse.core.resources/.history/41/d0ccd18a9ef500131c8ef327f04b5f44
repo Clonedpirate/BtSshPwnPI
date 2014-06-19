@@ -1,0 +1,151 @@
+package com.cloned.hackdroid;
+
+import java.awt.EventQueue;
+
+
+public class MainWindow extends JFrame {
+
+   private JPanel contentPane;
+
+   /**
+    * Launch the application.
+    */
+   public static void main(String[] args) {
+      EventQueue.invokeLater(new Runnable() {
+         public void run() {
+            try {
+               MainWindow frame = new MainWindow();
+               frame.setVisible(true);
+            } catch (Exception e) {
+               e.printStackTrace();
+            }
+         }
+      });
+   }
+
+   /**
+    * Create the frame.
+    */
+   public MainWindow() {
+      setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+      setBounds(100, 100, 450, 300);
+      contentPane = new JPanel();
+      contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+      setContentPane(contentPane);
+      contentPane.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+      
+      JButton btnRebootPi = new JButton("Reboot Pi");
+      btnRebootPi.addActionListener(new ActionListener() {
+         public void actionPerformed(ActionEvent e) {
+            final SSHClient ssh = new SSHClient();
+
+              try {
+               ssh.connect("192.168.1.127,22");
+            } catch (IOException e3) {
+               // TODO Auto-generated catch block
+               e3.printStackTrace();
+            }
+              try {
+                  ssh.authPassword("pi", "raspberry");
+                  final Session session = ssh.startSession();
+                  try {
+                      final Command cmd = session.exec("echo raspberry | sudo -S reboot");
+                  } catch (ConnectionException e1) {
+                  // TODO Auto-generated catch block
+                  e1.printStackTrace();
+               } catch (TransportException e1) {
+                  // TODO Auto-generated catch block
+                  e1.printStackTrace();
+               } finally {
+                      try {
+                     session.close();
+                  } catch (TransportException e1) {
+                     // TODO Auto-generated catch block
+                     e1.printStackTrace();
+                  } catch (ConnectionException e1) {
+                     // TODO Auto-generated catch block
+                     e1.printStackTrace();
+                  }
+                  }
+              } catch (ConnectionException e2) {
+               // TODO Auto-generated catch block
+               e2.printStackTrace();
+            } catch (TransportException e2) {
+               // TODO Auto-generated catch block
+               e2.printStackTrace();
+            } catch (UserAuthException e2) {
+               // TODO Auto-generated catch block
+               e2.printStackTrace();
+            } finally {
+                  try {
+                  ssh.disconnect();
+               } catch (IOException e1) {
+                  // TODO Auto-generated catch block
+                  e1.printStackTrace();
+               }
+              }
+         
+            
+         }
+      });
+      contentPane.add(btnRebootPi);
+      
+      JButton btnRestartFeed = new JButton("Restart Feed");
+      btnRestartFeed.addActionListener(new ActionListener() {
+         public void actionPerformed(ActionEvent e) {
+            final SSHClient ssh = new SSHClient();
+
+              try {
+               ssh.connect("192.168.1.127,22");
+            } catch (IOException e3) {
+               // TODO Auto-generated catch block
+               e3.printStackTrace();
+            }
+              try {
+                  ssh.authPassword("pi", "raspberry");
+                  final Session session = ssh.startSession();
+                  try {
+                      final Command cmd = session.exec("motion restart");
+                  } catch (ConnectionException e1) {
+                  // TODO Auto-generated catch block
+                  e1.printStackTrace();
+               } catch (TransportException e1) {
+                  // TODO Auto-generated catch block
+                  e1.printStackTrace();
+               } finally {
+                      try {
+                     session.close();
+                  } catch (TransportException e1) {
+                     // TODO Auto-generated catch block
+                     e1.printStackTrace();
+                  } catch (ConnectionException e1) {
+                     // TODO Auto-generated catch block
+                     e1.printStackTrace();
+                  }
+                  }
+              } catch (ConnectionException e2) {
+               // TODO Auto-generated catch block
+               e2.printStackTrace();
+            } catch (TransportException e2) {
+               // TODO Auto-generated catch block
+               e2.printStackTrace();
+            } catch (UserAuthException e2) {
+               // TODO Auto-generated catch block
+               e2.printStackTrace();
+            } finally {
+                  try {
+                  ssh.disconnect();
+               } catch (IOException e1) {
+                  // TODO Auto-generated catch block
+                  e1.printStackTrace();
+               }
+              }
+         
+            
+         
+         }
+      });
+      contentPane.add(btnRestartFeed);
+   }
+
+}
